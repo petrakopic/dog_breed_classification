@@ -23,7 +23,7 @@ def train(
         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
-    model.fit(dataset, batch_size=100, epochs=10)
+    model.fit(dataset, batch_size=1, epochs=10)
     model.save(model_out_path)
     return model
 
@@ -38,14 +38,9 @@ def build_model(input_shape: Tuple[int, int, int]):
     base_model.trainable = False
 
     x = base_model(input_img)
-    x = tf.keras.layers.GlobalAveragePooling2D(
-        pool_size=11, strides=2, padding="valid", data_format="channels_last"
-    )(x)
-    x = tf.keras.layers.GlobalAveragePooling2D(
-        pool_size=7, strides=2, padding="valid", data_format="channels_last"
-    )(x)
+
     x = tf.keras.layers.Dropout(0.2)(x)
-    f = tf.keras.layers.Flatten()(x)
+    f = tf.keras.layers.GlobalAveragePooling2D()(x)
     output1 = tf.keras.layers.Dense(units=120, activation="softmax")(f)
 
     custom_model = conv_skip_model_block(input_shape=input_shape)
@@ -88,12 +83,17 @@ def conv_skip_model_block(
     x = tf.keras.layers.Activation("relu")(x)
 
     # Decrease the dimension before flattening:
-    x = tf.keras.layers.GlobalAveragePooling2D(
-        pool_size=11, strides=2, padding="valid", data_format="channels_last"
+    x = tf.keras.layers.AveragePooling2D(
+        pool_size=4, strides=2, padding="valid", data_format="channels_last"
     )(x)
-    x = tf.keras.layers.GlobalAveragePooling2D(
-        pool_size=7, strides=2, padding="valid", data_format="channels_last"
+    x = tf.keras.layers.Conv2D(
+        filters=3,
+        kernel_size=7,
+        strides=2,
+        padding="valid",
+        kernel_initializer=initializer(seed=0),
     )(x)
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
     model = tf.keras.Model(inputs=input_img, outputs=x)
     return model
