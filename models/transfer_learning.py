@@ -38,7 +38,12 @@ def build_model(input_shape: Tuple[int, int, int]):
     base_model.trainable = False
 
     x = base_model(input_img)
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    x = tf.keras.layers.GlobalAveragePooling2D(
+        pool_size=11, strides=2, padding="valid", data_format="channels_last"
+    )(x)
+    x = tf.keras.layers.GlobalAveragePooling2D(
+        pool_size=7, strides=2, padding="valid", data_format="channels_last"
+    )(x)
     x = tf.keras.layers.Dropout(0.2)(x)
     f = tf.keras.layers.Flatten()(x)
     output1 = tf.keras.layers.Dense(units=120, activation="softmax")(f)
@@ -81,6 +86,14 @@ def conv_skip_model_block(
 
     x = tf.keras.layers.Add()([x, input_shortcut])
     x = tf.keras.layers.Activation("relu")(x)
+
+    # Decrease the dimension before flattening:
+    x = tf.keras.layers.GlobalAveragePooling2D(
+        pool_size=11, strides=2, padding="valid", data_format="channels_last"
+    )(x)
+    x = tf.keras.layers.GlobalAveragePooling2D(
+        pool_size=7, strides=2, padding="valid", data_format="channels_last"
+    )(x)
 
     model = tf.keras.Model(inputs=input_img, outputs=x)
     return model
