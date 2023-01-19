@@ -9,7 +9,7 @@ def combine_models(
     training: bool = True,
 ):
     """
-    Combine the results of the pretrained resnet50 model
+    Combine the results of the pretrained resnet50 model.
     (https://www.tensorflow.org/api_docs/python/tf/keras/applications/resnet50/ResNet50)
     and the custom model. The last layers of both networks are global average pooling
     followed by softmax with the number of classes given by num_classes.
@@ -38,8 +38,8 @@ def conv_skip_model_block(
     training: bool = True,
 ):
     """
-    Model consists of two blocks Conv->BatchNorm->Relu and one skip connection.
-    Number of trainable parameters is
+    Model consists of three blocks Conv->BatchNorm->Relu and one skip connection.
+    Number of trainable parameters is 804
     :param input_shape:
     :param num_classes: Number of classes in the target variable
     :param training: True is the model is in the training phase, otherwise False.
@@ -48,25 +48,23 @@ def conv_skip_model_block(
 
     input_img = tf.keras.Input(shape=input_shape)
     input_shortcut = input_img
-    x = tf.keras.layers.Conv2D(
+
+    x = _conv_block(
+        input_img,
         filters=3,
         kernel_size=1,
         strides=(1, 1),
         padding="valid",
-        kernel_initializer=tf.keras.initializers.random_uniform,
-    )(input_img)
-    x = tf.keras.layers.BatchNormalization(axis=3)(x, training=training)
-    x = tf.keras.layers.Activation("relu")(x)
+        training=training,
+    )
 
-    x = tf.keras.layers.Conv2D(
-        filters=3,
-        kernel_size=7,
-        strides=2,
-        padding="valid",
-        kernel_initializer=tf.keras.initializers.random_uniform,
-    )(x)
-    x = tf.keras.layers.BatchNormalization(axis=3)(x, training=training)
-    x = tf.keras.layers.Activation("relu")(x)
+    x = _conv_block(
+        x, filters=3, kernel_size=4, strides=(1, 1), padding="same", training=training
+    )
+
+    x = _conv_block(
+        x, filters=3, kernel_size=4, strides=(1, 1), padding="same", training=training
+    )
 
     x = tf.keras.layers.Add()([x, input_shortcut])
 
@@ -82,6 +80,26 @@ def conv_skip_model_block(
 
     model = tf.keras.Model(inputs=input_img, outputs=x)
     return model
+
+
+def _conv_block(
+    x_0: tf.Tensor,
+    filters: int,
+    kernel_size: int,
+    strides: Tuple[int, int],
+    padding: str,
+    training: bool,
+):
+    x = tf.keras.layers.Conv2D(
+        filters=filters,
+        kernel_size=kernel_size,
+        strides=strides,
+        padding=padding,
+        kernel_initializer=tf.keras.initializers.random_uniform,
+    )(x_0)
+    x = tf.keras.layers.BatchNormalization(axis=3)(x, training=training)
+    x = tf.keras.layers.Activation("relu")(x)
+    return x
 
 
 def model_from_resnet(input_shape: Optional[Tuple] = None, num_classes: int = 120):
