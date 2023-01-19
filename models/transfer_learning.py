@@ -37,7 +37,7 @@ def combine_models(
     if training:
         x = tf.keras.layers.Dropout(0.4)(x)
 
-    output = tf.keras.layers.Dense(units=num_classes, activation="softmax")(x)
+    output = tf.keras.layers.Dense(units=num_classes, activation="relu")(x)
     model = tf.keras.Model(input_img, output)
 
     return model

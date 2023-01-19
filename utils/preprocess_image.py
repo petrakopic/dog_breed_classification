@@ -18,7 +18,7 @@ def get_input_dataset(folder_path: str):
             )
         )
     )
-    return dataset
+    return dataset.prefetch(tf.data.AUTOTUNE)
 
 
 def _prepare_for_resnet(file_name: str, folder_path: str) -> tf.data.Dataset:
