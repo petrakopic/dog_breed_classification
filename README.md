@@ -1,5 +1,9 @@
 # Dog breed classification
 
+Module used for the purpose of the kaggle playground competition Dog Breed Identification. 
+For more info please see https://www.kaggle.com/competitions/dog-breed-identification/overview
+More models were built during the development process (they can be found in the models/development/ folder).
+Only the main model can be used for training from the terminal. 
 
 ## Requirements
 
@@ -9,7 +13,7 @@
 ## Instalation
 
 ### Steps
-1. Download the kaggle dataset
+1. Download the kaggle dataset.
 Use the instruction from here https://github.com/Kaggle/kaggle-api to install the Kaggle API
 ```bash
 kaggle competitions download -c dog-breed-identification
@@ -21,7 +25,7 @@ kaggle competitions download -c dog-breed-identification
 python3 -m pip install -e 
 ```
 
-3. To visualize some images in the dataset run 
+3. Visualize some images from the dataset: 
 ```bash
 python -m cli.commands show_multiple --image_path "data/train" --num_img 4
 ```
@@ -30,7 +34,7 @@ python -m cli.commands show_multiple --image_path "data/train" --num_img 4
 ```bash
 python -m cli.commands train_model --image_path "data/train"
 ```
-To see available options run: 
+See vailable options with: 
 ```bash
 python -m cli.commands train_model --help
 ```
