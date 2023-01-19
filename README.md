@@ -5,6 +5,14 @@ For more info please see https://www.kaggle.com/competitions/dog-breed-identific
 More models were built during the development process (they can be found in the models/development/ folder).
 Only the main model can be used for training from the terminal. 
 
+
+<div align="center"><a href="https://github.com/petrakopic/dog_breed_classification">
+<img src="img/dogs.png" alt="Python" border="0">
+</a>
+</div>
+
+
+
 ## Requirements
 
 - python >= 3.7.x
