@@ -109,7 +109,7 @@ def _fetch_pairs(classes: List[str]) -> List[Tuple[str, int]]:
 
 def _int_to_numpy(index: int, classes_num: int) -> np.array:
     """
-    One-hot encoded representation for the given index and number of classes 
+    One-hot encoded representation for the given index and number of classes
     :param index:
     :param classes_num:
     :return:
