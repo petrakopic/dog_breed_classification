@@ -9,13 +9,14 @@
 ## Instalation
 
 ### Steps
-1. Download the kaggle dataset 
+1. Download the kaggle dataset
+Use the instruction from here https://github.com/Kaggle/kaggle-api to install the Kaggle API
 ```bash
-python3 -m pip install git+https://github.com/broamski/aws-mfa.git
+kaggle competitions download -c dog-breed-identification
 ```
 
 
-2. Run project instalation
+2. Run project installation
 ```bash
 python3 -m pip install -e 
 ```
@@ -27,5 +28,5 @@ python -m cli.commands show_multiple --image_path "data/train" --num_img 4
 
 4. To start the training process: 
 ```bash
-python3 -m pip install -e 
+
 ```
