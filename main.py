@@ -44,4 +44,4 @@ def train(folder_path: str,
     return model
 
 
-# ToDo: add validation
+# ToDo: add validation. Add config file for loading model paramters.
