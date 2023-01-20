@@ -11,13 +11,13 @@ def get_input_dataset(folder_path: str):
     """
 
     image_names = os.listdir(folder_path)
-    dataset = tf.data.Dataset.from_tensors(
-        list(
+
+    dataset = tf.data.Dataset.from_tensor_slices(tf.cast(list(
             map(
                 lambda img_name: _prepare_for_resnet(img_name, folder_path), image_names
             )
-        )
-    )
+        ), tf.float32))
+
     return dataset.prefetch(tf.data.AUTOTUNE)
 
 

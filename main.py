@@ -26,11 +26,11 @@ def train(folder_path: str,
 
     inputs = get_input_dataset(folder_path=folder_path)
     outputs = get_output_dataset(folder_path=folder_path)
-    dataset = tf.data.Dataset.zip((inputs, outputs))
+    dataset = tf.data.Dataset.zip((inputs, outputs)).batch(batch_size=batch_size, drop_remainder=True)
 
     # Find the input and output shapes from the dataset:
-    input_shape = inputs.element_spec.shape[1:]
-    num_classes = outputs.element_spec.shape[1]
+    input_shape = inputs.element_spec.shape
+    num_classes = outputs.element_spec.shape[0]
 
     model = combine_models(input_shape=input_shape, num_classes=num_classes, training=True)
 
@@ -39,6 +39,9 @@ def train(folder_path: str,
         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
-    model.fit(dataset, batch_size=batch_size, epochs=epochs)
+    model.fit(dataset, epochs=epochs)
     model.save(model_out_path)
     return model
+
+
+# ToDo: add validation

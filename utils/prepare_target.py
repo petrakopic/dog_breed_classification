@@ -14,7 +14,7 @@ def get_output_dataset(folder_path: str) -> tf.data.Dataset:
 
     image_names = os.listdir(folder_path)
     labels = [fetch_label(re.sub(IMAGE_FORMAT, "", img)) for img in image_names]
-    return tf.data.Dataset.from_tensors(labels)
+    return tf.data.Dataset.from_tensor_slices(tf.cast(labels, tf.int64))
 
 
 def fetch_label(img_id: str) -> Optional[np.array]:
