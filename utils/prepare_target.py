@@ -10,11 +10,11 @@ IMAGE_FORMAT = ".jpg"
 LABELS_PATH = "data/labels.csv"
 
 
-def get_output_dataset(folder_path: str) -> tf.data.Dataset:
+def run(folder_path: str) -> np.array:
 
     image_names = os.listdir(folder_path)
     labels = [fetch_label(re.sub(IMAGE_FORMAT, "", img)) for img in image_names]
-    return tf.data.Dataset.from_tensor_slices(tf.cast(labels, tf.int64))
+    return np.array(labels)
 
 
 def fetch_label(img_id: str) -> Optional[np.array]:
