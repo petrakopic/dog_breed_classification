@@ -30,12 +30,12 @@ def show_multiple(folder_path: str, num_img: int = 6):
 
     try:
         if num_img == 2:
-            images = [Image.open(img) for img in img_paths[2 * i: 2 * i + 2]]
+            images = [Image.open(img) for img in img_paths[2 * i : 2 * i + 2]]
             ax[0].imshow(images[0])
             ax[1].imshow(images[1])
         else:
             for i in range(nrows):
-                images = [Image.open(img) for img in img_paths[2 * i: 2 * i + 2]]
+                images = [Image.open(img) for img in img_paths[2 * i : 2 * i + 2]]
                 ax[i][0].imshow(images[0])
                 ax[i][1].imshow(images[1])
 
