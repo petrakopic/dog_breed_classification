@@ -1,51 +1,14 @@
-from typing import Tuple
+from typing import Callable
 import os
-import tensorflow as tf
+from keras_preprocessing.image import load_img
+import numpy as np
+from tensorflow.python.keras.preprocessing.image import load_img, img_to_array
+
+IMAGE_SIZE = (224,224,3)
 
 
-def get_input_dataset(folder_path: str):
-    """
-    Loads the images to dataset object
-    :param folder_path:
-    :return:
-    """
-
-    image_names = os.listdir(folder_path)
-
-    dataset = tf.data.Dataset.from_tensor_slices(tf.cast(list(
-            map(
-                lambda img_name: _prepare_for_resnet(img_name, folder_path), image_names
-            )
-        ), tf.float32))
-
-    return dataset.prefetch(tf.data.AUTOTUNE)
-
-
-def _prepare_for_resnet(file_name: str, folder_path: str) -> tf.data.Dataset:
-    """
-    Prepare the input data for the ResNet50 network architecture.
-    First normalize and resize the image and then pass it to the resnet50 preprocess.
-    :param file_name: name of the image file
-    :param folder_path: path to the folder with images.
-    :return:
-    """
-    images = _preprocess_img(filename=file_name, folder_path=folder_path, output_size=(224, 224))
-    return tf.keras.applications.resnet50.preprocess_input(images, data_format=None)
-
-
-def _preprocess_img(filename: str, folder_path: str, output_size: Tuple[int, int]) -> tf.Tensor:
-    image_string = tf.io.read_file(f"{folder_path}/{filename}")
-    image_decoded = tf.image.decode_jpeg(image_string, channels=3)
-    image = tf.image.convert_image_dtype(image_decoded, tf.float32)
-    image = _resize(image=image, output_size=output_size)
-    return image
-
-
-def _resize(image: tf.Tensor, output_size: Tuple[int, int]) -> tf.Tensor:
-    """
-    Resizing the image to 224x224 dimension
-    :param image:
-    :param output_size:
-    :return:
-    """
-    return tf.image.resize(image, output_size)
+def run(folder_path:str, preprocess_func: Callable)->np.array:
+    image_paths = [f"{folder_path}/{filename}" for filename in os.listdir(folder_path)]
+    imgs = [load_img(img_path, target_size=IMAGE_SIZE) for img_path in image_paths]
+    img_array = np.array([img_to_array(img) for img in imgs])
+    return preprocess_func(img_array)
