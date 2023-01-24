@@ -53,13 +53,14 @@ def prepare_features(
     features = []
 
     for model, preprocess_func in tqdm(
-            zip(MODELS, PREPROCESS_FUNCTIONS),
-            desc=f"Running the model...",
-            total = 3):
+        zip(MODELS, PREPROCESS_FUNCTIONS), desc=f"Running the model...", total=3
+    ):
         inputs = preprocess_image.run(
             folder_path=folder_path, preprocess_func=preprocess_func
         )
-        models_features = model(include_top=False, weights="imagenet", pooling="avg").predict(inputs)
+        models_features = model(
+            include_top=False, weights="imagenet", pooling="avg"
+        ).predict(inputs)
         features.append(models_features)
     features = np.concatenate(features, axis=-1)
 
