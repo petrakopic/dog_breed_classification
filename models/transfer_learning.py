@@ -25,11 +25,11 @@ def combine_models(
     xception_model = model_from_xception(input_shape=input_shape)
     output_xception = xception_model(input_img)
 
-    custom_model = conv_skip_model_block(
-        input_shape=input_shape, training=training
-    )
+    custom_model = conv_skip_model_block(input_shape=input_shape, training=training)
     output_custom = custom_model(input_img)
-    output_combined = tf.keras.layers.concatenate([output_resnet, output_xception, output_custom], axis=-1)
+    output_combined = tf.keras.layers.concatenate(
+        [output_resnet, output_xception, output_custom], axis=-1
+    )
 
     x = tf.keras.layers.GlobalAveragePooling2D()(output_combined)
 
@@ -145,4 +145,3 @@ def model_from_xception(input_shape: Optional[Tuple] = None):
     x = base_model(input_img)
     model = tf.keras.Model(inputs=input_img, outputs=x)
     return model
-
