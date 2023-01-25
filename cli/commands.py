@@ -17,24 +17,12 @@ def cli():
 
 
 @cli.command("train_model")
-@options.image_path
-@click.option("--learning_rate", default=0.001)
-@click.option("--model_out_path", default="data/")
-@click.option("--batch_size", default=100)
-@click.option("--epochs", default=10)
+@click.option("--config_file", default="model_config.yaml")
 def train_model(
-    image_path: str,
-    learning_rate: str,
-    model_out_path: str,
-    batch_size: int = 10,
-    epochs: int = 10,
+    config_file: str,
 ):
     train(
-        folder_path=image_path,
-        base_learning_rate=learning_rate,
-        model_out_path=model_out_path,
-        batch_size=batch_size,
-        epochs=epochs,
+        config_file=config_file
     )
 
 
