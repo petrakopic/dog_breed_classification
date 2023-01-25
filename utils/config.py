@@ -3,7 +3,6 @@ import yaml
 
 
 class ModelConfig:
-
     def __init__(self, config_file_path: str):
         super().__init__()
         with open(f"{Path(__file__).parent.parent}/{config_file_path}", "r") as f:
