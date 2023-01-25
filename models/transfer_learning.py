@@ -1,147 +1,61 @@
-from typing import Tuple, Optional
+from typing import Tuple, List
 import tensorflow as tf
-from models.data_augmentation import data_augmenter
+from tqdm import tqdm
+
+import numpy as np
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.applications.xception import preprocess_input as xcep_preprocess
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input as resnet_preprocess
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.applications.inception_v3 import (
+    preprocess_input as inception_preprocess,
+)
+from utils import preprocess_image, prepare_target
+
+MODELS = (Xception, ResNet50, InceptionV3)
+PREPROCESS_FUNCTIONS = (xcep_preprocess, resnet_preprocess, inception_preprocess)
 
 
-def combine_models(
+def prepare_features(
+    folder_path: str,
+):
+    """
+    Run the three pretrained models on the image dataset to get the high level features.
+    Remove the last layers from the model and concatenates the output to one tensor.
+    Use the tensor as the input to the trainable custom model.
+    :param folder_path:
+    :return:
+    """
+    features = []
+
+    for model, preprocess_func in tqdm(
+        zip(MODELS, PREPROCESS_FUNCTIONS), desc=f"Running the model...", total=3
+    ):
+        inputs = preprocess_image.run(
+            folder_path=folder_path, preprocess_func=preprocess_func
+        )
+        models_features = model(
+            include_top=False, weights="imagenet", pooling="avg"
+        ).predict(inputs)
+        features.append(models_features)
+    features = np.concatenate(features, axis=-1)
+
+    return features
+
+
+def custom_model(
     input_shape: Tuple[int, int, int],
-    num_classes: int = 120,
-    training: bool = True,
 ):
     """
-    Combine the results of the pretrained resnet50 model
-    (https://www.tensorflow.org/api_docs/python/tf/keras/applications/resnet50/ResNet50),
-    xception model (https://www.tensorflow.org/api_docs/python/tf/keras/applications/xception/Xception)
-    and the custom model.
-    :return:
-    """
-
-    input_img = tf.keras.Input(shape=input_shape)
-    input_img = data_augmenter()(input_img)
-
-    resnet_model = model_from_resnet(input_shape=input_shape)
-    output_resnet = resnet_model(input_img)
-
-    xception_model = model_from_xception(input_shape=input_shape)
-    output_xception = xception_model(input_img)
-
-    custom_model = conv_skip_model_block(input_shape=input_shape, training=training)
-    output_custom = custom_model(input_img)
-    output_combined = tf.keras.layers.concatenate(
-        [output_resnet, output_xception, output_custom], axis=-1
-    )
-
-    x = tf.keras.layers.GlobalAveragePooling2D()(output_combined)
-
-    # Add dropout to avoid overfitting
-    if training:
-        x = tf.keras.layers.Dropout(0.4)(x)
-
-    output = tf.keras.layers.Dense(units=num_classes, activation="relu")(x)
-    model = tf.keras.Model(input_img, output)
-
-    return model
-
-
-def conv_skip_model_block(
-    input_shape: Tuple[int, int, int],
-    training: bool = True,
-):
-    """
-    Model consists of three blocks Conv->BatchNorm->Relu
-    Number of trainable parameters is: 3338
-    The output shape of is (7,7,20)
-    :param input_shape:
-    :param num_classes: Number of classes in the target variable
-    :param training: True is the model is in the training phase, otherwise False.
-    :return:
-    """
-
-    input_img = tf.keras.Input(shape=input_shape)
-
-    x = _conv_block(
-        input_img,
-        filters=3,
-        kernel_size=1,
-        strides=(2, 2),
-        padding="valid",
-        training=training,
-    )
-
-    x = _conv_block(
-        x, filters=10, kernel_size=1, strides=(4, 4), padding="valid", training=training
-    )
-
-    x = _conv_block(
-        x, filters=20, kernel_size=4, strides=(4, 4), padding="valid", training=training
-    )
-
-    model = tf.keras.Model(inputs=input_img, outputs=x)
-    return model
-
-
-def _conv_block(
-    x_0: tf.Tensor,
-    filters: int,
-    kernel_size: int,
-    strides: Tuple[int, int],
-    padding: str,
-    training: bool,
-):
-    x = tf.keras.layers.Conv2D(
-        filters=filters,
-        kernel_size=kernel_size,
-        strides=strides,
-        padding=padding,
-        kernel_initializer=tf.keras.initializers.random_uniform,
-    )(x_0)
-    x = tf.keras.layers.BatchNormalization(axis=3)(x, training=training)
-    x = tf.keras.layers.Activation("relu")(x)
-    return x
-
-
-def model_from_resnet(input_shape: Optional[Tuple] = None):
-    """
-    load pretrained ResNet50 model. The model is trained to classify different objects.
-    :param num_classes: Number of classes in the target variable
+    Model consisting of the dropout layer and the one fully connected layer with 120
+    output classes. The activation function is softmax.
     :param input_shape:
     :return:
     """
+
     input_img = tf.keras.Input(shape=input_shape)
-    base_model = tf.keras.applications.ResNet50(
-        include_top=False,
-        weights="imagenet",
-        input_tensor=None,
-        input_shape=input_shape,
-        pooling=None,
-        classes=1000,
-    )
-
-    base_model.trainable = False
-    x = base_model(input_img)
-
-    model = tf.keras.Model(inputs=input_img, outputs=x)
-    return model
-
-
-def model_from_xception(input_shape: Optional[Tuple] = None):
-    """
-    load pretrained ResNet50 model. The model is trained to classify different objects.
-    :param num_classes: Number of classes in the target variable
-    :param input_shape:
-    :return:
-    """
-    input_img = tf.keras.Input(shape=input_shape)
-    base_model = tf.keras.applications.xception.Xception(
-        include_top=False,
-        weights="imagenet",
-        input_tensor=None,
-        input_shape=input_shape,
-        pooling=None,
-        classes=500,
-    )
-
-    base_model.trainable = False
-    x = base_model(input_img)
+    x = tf.keras.layers.Dropout(0.4)(input_img)
+    x = tf.keras.layers.Dense(units=120, activation="softmax")(x)
     model = tf.keras.Model(inputs=input_img, outputs=x)
     return model

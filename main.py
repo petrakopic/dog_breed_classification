@@ -3,46 +3,45 @@ Main function for running the training and the validation of the model. All the 
 be run from the command line using the commands from the cli/ folder.
 """
 import tensorflow as tf
-from models.transfer_learning import combine_models
-from utils import train_dataset
-from utils.preprocess_image import IMAGE_SIZE
+from models.transfer_learning import prepare_features, custom_model
+from utils import prepare_target
+from utils.config import ModelConfig
 
 
-def train(
-    folder_path: str,
-    base_learning_rate,
-    model_out_path: str,
-    batch_size: int = 10,
-    epochs: int = 10,
-):
-    """
-    Main function for training the model.
-    :param folder_path:
-    :param base_learning_rate:
-    :param model_out_path:
-    :param batch_size:
-    :param epochs:
+def train(config_file: str = "model_config.yaml"):
+    conf = ModelConfig(config_file)
 
-    :return:
-    """
+    target = prepare_target.run(folder_path=conf.get_value("data_train_folder"))
+    features = prepare_features(folder_path=conf.get_value("data_train_folder"))
 
-    dataset = train_dataset.prepare(
-        folder_path=folder_path,
-        batch_size=batch_size,
-        drop_remainder=True,
-        preprocess_func=lambda x: x,
-    )
-
-    model = combine_models(input_shape=IMAGE_SIZE, num_classes=120, training=True)
-
+    model = custom_model(input_shape=features.shape[1])
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
-        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        optimizer=tf.keras.optimizers.Adam(),
+        loss=tf.keras.losses.CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
-    model.fit(dataset, epochs=epochs)
-    model.save(model_out_path)
+    model.fit(
+        x=features,
+        y=target,
+        batch_size=conf.get_value("batch_size"),
+        epochs=conf.get_value("epochs"),
+    )
+    model.save(conf.get_value("model_out_path"))
     return model
 
 
-# ToDo: add validation. Add config file for loading model paramters.
+def predict(config_file: str = "model_config.yaml"):
+    """
+    Loads the pretrained model from the memory and predicts the results given the images
+    in the test folder.
+    :param config_file:
+    :return: List of class names given the images in the test folder.
+    """
+    conf = ModelConfig(config_file)
+    model = tf.keras.models.load_model(conf.get_value("model_out_path"))
+    input_images = prepare_features(folder_path=conf.get_value("data_test_folder"))
+
+    predicted = model.predict(input_images)
+
+    class_names = [prepare_target.probs_to_class_name(p) for p in predicted]
+    return class_names

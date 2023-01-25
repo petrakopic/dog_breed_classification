@@ -33,6 +33,16 @@ def fetch_label(img_id: str) -> Optional[np.array]:
     return class_name_to_target(class_name)
 
 
+def probs_to_class_name(probs_vector: np.array)->str:
+    """
+    Given the vector of probabilites(output of the model), returns the class name.
+    :param probs_vector:
+    :return:
+    """
+    one_hot_encoding = probs_to_one_hot_encoding(prob_vector=probs_vector)
+    return target_to_class_name(one_hot_encoding)
+
+
 def target_to_class_name(target_vector: np.array) -> str:
     """
     Given the target vector (120-dimensional vector) returns the class name
@@ -45,7 +55,7 @@ def target_to_class_name(target_vector: np.array) -> str:
     return class_name
 
 
-def class_name_to_target(class_name) -> np.array:
+def class_name_to_target(class_name:str) -> np.array:
     """
     Given the class name returns the 120-dimensional vector used as a target variable in training the model.
     :param class_name:
@@ -57,8 +67,12 @@ def class_name_to_target(class_name) -> np.array:
     return target_variable
 
 
+def probs_to_one_hot_encoding(prob_vector: np.array)->np.array:
+    return [(i == i.max()).astype(int) for i in prob_vector]
+
+
 @lru_cache(1)
-def _get_all_classes_list(labels_path):
+def _get_all_classes_list(labels_path:str)->List[str]:
     breeds_set = set()
     with open(labels_path) as file:
         reader = csv.DictReader(file)
