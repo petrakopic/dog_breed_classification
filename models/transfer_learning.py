@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple
 import tensorflow as tf
 from tqdm import tqdm
 
@@ -11,7 +11,7 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.inception_v3 import (
     preprocess_input as inception_preprocess,
 )
-from utils import preprocess_image, prepare_target
+from utils import preprocess_image
 
 MODELS = (Xception, ResNet50, InceptionV3)
 PREPROCESS_FUNCTIONS = (xcep_preprocess, resnet_preprocess, inception_preprocess)

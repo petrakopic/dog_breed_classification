@@ -1,6 +1,6 @@
 from typing import Tuple, Optional
 import tensorflow as tf
-from models.data_augmentation import data_augmenter
+from models.development.data_augmentation import data_augmenter
 from utils import train_dataset
 from utils.config import ModelConfig
 from utils.preprocess_image import IMAGE_SIZE
