@@ -40,9 +40,5 @@ python -m cli.commands show_multiple --image_path "data/train" --num_img 4
 
 4. To start the training process: 
 ```bash
-python -m cli.commands train_model --image_path "data/train"
-```
-See vailable options with: 
-```bash
-python -m cli.commands train_model --help
+python -m cli.commands train_model --config_file "model_config.yaml"
 ```
